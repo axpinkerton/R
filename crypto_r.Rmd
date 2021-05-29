@@ -53,5 +53,16 @@ sorted_df = arrange(full_df, Symbol, date_time ,by_group=F)
 sorted_df
 sorted_df$mo_yr = paste0(substr(sorted_df$date_time,6,7),"-",substr(sorted_df$date_time,1,4))
 sorted_df
+weekly_norm = group_by(sorted_df, Name, wk_num) %>% summarise(norm_wk_ret_mean=mean(day_ret),norm_wk_ret_sd=sd(day_ret))
+weekly_norm
+```
+
+```{r}
+
+
+
+
+
+
 
 ```
