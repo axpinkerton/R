@@ -18,6 +18,7 @@ library(zoo)
 library(lubridate)
 coins = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/aggreg_coins.csv')
 head(coins)
+coins = na.omit(coins)
 coins$date_time = as.Date(coins$Date)
 coins$weekday = weekdays.Date(coins$date_time)
 require(Hmisc)
@@ -106,6 +107,25 @@ sorted_df
 ```{r}
 #Normalizing daily returns to the week, month, quarter, and year
 
+norm_df = sorted_df
+norm_df$day_ret_norm_to_wk = ((norm_df$day_ret - norm_df$wk_ret_mean) / norm_df$wk_ret_sd)
+norm_df$day_ret_norm_to_mo = ((norm_df$day_ret - norm_df$mo_ret_mean) / norm_df$mo_ret_sd)
+norm_df$day_ret_norm_to_qtr = ((norm_df$day_ret - norm_df$qtr_ret_mean) / norm_df$qtr_ret_sd)
+norm_df$day_ret_norm_to_yr = ((norm_df$day_ret - norm_df$yr_ret_mean) / norm_df$yr_ret_sd)
+norm_df
+```
+```{r}
 
+norm_df
+norm_day_tbl = norm_df %>% group_by(Symbol, wk_day_n) %>% summarise(norm_day=mean(day_ret_norm_to_wk))
+norm_day_tbl
+library(reshape2)
+melted = melt(norm_day_tbl,id.vars=c('wk_day_n','Symbol') ,measure.vars='norm_day')
+melted
+all_symbols_daily <- ggplot(melted, aes(x=wk_day_n, y=value, col=Symbol)) + geom_line()
+all_symbols_daily
+melted %>% group_by(Symbol) %>% top_n(1,value)
+
+norm_day_tbl %>% group_by(wk_day_n) %>% summarise(mean(norm_day, na.rm=T))
 
 ```
