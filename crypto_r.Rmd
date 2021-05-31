@@ -68,8 +68,11 @@ monthly_norm
 ```{r}
 sorted_df$yr = substr(sorted_df$date_time,1,4)
 sorted_df$mo = substr(sorted_df$date_time,6,7)
-sorted_df$qtr_yr = paste(ifelse(sorted_df$mo %in% c(1,2,3), 1, ifelse(sorted_df$mo %in% c(4,5,6), 2,ifelse(sorted_df$mo %in% c(7,8,9), 3,4))),'-',sorted_df$yr)
+sorted_df$mo[22000]
 
+sorted_df$qtr_yr = paste(ifelse(sorted_df$mo %in% c('01','02','03'), '01', ifelse(sorted_df$mo %in% c('04','05','06'), '02',ifelse(sorted_df$mo %in% c('07','08','09'), '03','04'))),'-',sorted_df$yr)
+
+gsub(' ','',sorted_df$qtr_yr)
 
 sorted_df
 yearly_norm = group_by(sorted_df, Name, yr) %>% summarise(norm_yr_ret_mean=mean(day_ret),norm_yr_ret_sd=sd(day_ret))
@@ -120,12 +123,64 @@ norm_df
 norm_day_tbl = norm_df %>% group_by(Symbol, wk_day_n) %>% summarise(norm_day=mean(day_ret_norm_to_wk))
 norm_day_tbl
 library(reshape2)
-melted = melt(norm_day_tbl,id.vars=c('wk_day_n','Symbol') ,measure.vars='norm_day')
-melted
-all_symbols_daily <- ggplot(melted, aes(x=wk_day_n, y=value, col=Symbol)) + geom_line()
+melted_day = melt(norm_day_tbl,id.vars=c('wk_day_n','Symbol') ,measure.vars='norm_day')
+melted_day
+all_symbols_daily <- ggplot(melted_day, aes(x=wk_day_n, y=value, col=Symbol)) + geom_line()
 all_symbols_daily
 melted %>% group_by(Symbol) %>% top_n(1,value)
 
-norm_day_tbl %>% group_by(wk_day_n) %>% summarise(mean(norm_day, na.rm=T))
+ttl_by_day = norm_day_tbl %>% group_by(wk_day_n) %>% summarise(normalized_daily_return = mean(norm_day, na.rm=T))
+ttl_by_day
+agg_daily <- ggplot(ttl_by_day, aes(x=wk_day_n, y=normalized_daily_return)) +geom_line()
+agg_daily
+
+```
+
+
+```{r}
+norm_df
+norm_mo_tbl = norm_df %>% group_by(Symbol, day_in_mo) %>% summarise(norm_mo=mean(day_ret_norm_to_mo))
+norm_mo_tbl
+na.omit(norm_mo_tbl)
+library(reshape2)
+melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Symbol') ,measure.vars='norm_mo')
+melted_mo
+all_symbols_monthly <- ggplot(melted_mo,aes(x=day_in_mo, y=value, group=Symbol)) + geom_line(aes(colour=Symbol))
+
+all_symbols_monthly
+melted_mo %>% group_by(Symbol) %>% top_n(1,value)
+
+ttl_by_mo = norm_mo_tbl %>% group_by(day_in_mo) %>% summarise(normalized_monthly_return = mean(norm_mo, na.rm=T))
+ttl_by_mo
+agg_monthly <- ggplot(data = ttl_by_mo, aes(x=day_in_mo, y=normalized_monthly_return)) +geom_line(aes(group = 1))
+agg_monthly
+
+```
+```{r}
+norm_df$mo_day = substr(norm_df$date_time,6,10)
+norm_df$first_qtr_day =paste(norm_df$yr,'-', ifelse(substr(norm_df$qtr_yr,1,2)=='01','01-01',ifelse(substr(norm_df$qtr_yr,1,2)=='02','04-01',ifelse(substr(norm_df$qtr_yr,1,2)=='03','07-01','10-01'))))
+norm_df$first_qtr_day = gsub(" ", "",norm_df$first_qtr_day)
+norm_df$qtr_yr = gsub(' ', '' , norm_df$qtr_yr)
+
+as.Date(norm_df$first_qtr_day)
+as.Date(norm_df$date_time)
+norm_df$day_into_qtr = as.Date(norm_df$date_time) - as.Date(norm_df$first_qtr_day) +1
+
+norm_qtr_tbl = norm_df %>% group_by(Symbol, day_into_qtr) %>% summarise(norm_qtr=mean(day_ret_norm_to_qtr))
+norm_qtr_tbl
+na.omit(norm_qtr_tbl)
+norm_qtr_tbl
+library(reshape2)
+melted_qtr = melt(norm_qtr_tbl,id.vars=c('day_into_qtr','Symbol') ,measure.vars='norm_qtr')
+melted_qtr
+all_symbols_quarterly <- ggplot(melted_qtr,aes(x=day_into_qtr, y=value, group=Symbol)) + geom_line(aes(colour=Symbol))
+
+all_symbols_quarterly
+melted_qtr %>% group_by(Symbol) %>% top_n(1,value)
+
+ttl_by_qtr = norm_qtr_tbl %>% group_by(day_into_qtr) %>% summarise(normalized_quarterly_return = mean(norm_qtr, na.rm=T))
+ttl_by_qtr
+agg_qtrly <- ggplot(data = ttl_by_qtr, aes(x=day_into_qtr, y=normalized_quarterly_return)) +geom_line(aes(group = 1))
+agg_qtrly
 
 ```
