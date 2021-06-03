@@ -143,20 +143,24 @@ agg_daily
 
 ```{r}
 norm_df
-mo_tbl = norm_df %>% group_by(Symbol, day_in_mo) %>% summarise(mo_ret=mean(day_ret))
+mo_tbl = norm_df %>% group_by(Symbol, mo, day_in_mo) %>% summarise(mo_ret=mean(day_ret))
 mo_tbl
 na.omit(norm_mo_tbl)
 # library(reshape2)
 # melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Symbol') ,measure.vars='norm_mo')
 # melted_mo
-all_symbols_monthly <- ggplot(mo_tbl,aes(x=day_in_mo, y=mo_ret, group=Symbol)) + geom_line(aes(colour=Symbol))
+all_symbols_monthly <- ggplot(mo_tbl,aes(x=day_in_mo, y=mo_ret, group=Symbol)) + geom_line(aes(colour=Symbol)
+all_symbols_monthly + facet_wrap(~mo)
 
+```
+```{r}
 # all_symbols_monthly
 # melted_mo %>% group_by(Symbol) %>% top_n(1,value)
 
-ttl_by_mo = mo_tbl %>% group_by(day_in_mo) %>% summarise(agg_monthly_return = mean(mo_ret, na.rm=T))
-ttl_by_mo
-agg_monthly <- ggplot(data = ttl_by_mo, aes(x=day_in_mo, y=agg_monthly_return)) +geom_line(aes(group = 1))
+ttl_by_mo = mo_tbl %>% group_by(day_in_mo, mo) %>% summarise(agg_monthly_return = mean(mo_ret, na.rm=T))
+ttl_by_mo_by_day =mo_tbl %>% group_by(day_in_mo) %>% summarise(agg_monthly_return = mean(mo_ret, na.rm=T))
+
+agg_monthly <- ggplot(data = ttl_by_mo_by_day, aes(x=day_in_mo, y=agg_monthly_return)) +geom_line(aes(group = 1))
 agg_monthly
 
 ```
@@ -169,9 +173,10 @@ norm_df$qtr_yr = gsub(' ', '' , norm_df$qtr_yr)
 as.Date(norm_df$first_qtr_day)
 as.Date(norm_df$date_time)
 norm_df$day_into_qtr = as.Date(norm_df$date_time) - as.Date(norm_df$first_qtr_day) +1
-norm_df
-qtr_tbl = norm_df %>% group_by(Symbol, day_into_qtr) %>% summarise(qtr_ret=mean(day_ret))
-qtr_tbl
+norm_df$qtr = substr(norm_df$qtr_yr,1,2)
+
+qtr_tbl = norm_df %>% group_by(Symbol, qtr, day_into_qtr) %>% summarise(qtr_ret=mean(day_ret))
+
 na.omit(qtr_tbl)
 qtr_tbl
 # library(reshape2)
@@ -179,13 +184,13 @@ qtr_tbl
 # melted_qtr
 all_symbols_quarterly <- ggplot(qtr_tbl,aes(x=day_into_qtr, y=qtr_ret, group=Symbol)) + geom_line(aes(colour=Symbol))
 
-all_symbols_quarterly
+all_symbols_quarterly + facet_grid(~qtr)
 # melted_qtr %>% group_by(Symbol) %>% top_n(1,value)
 
-ttl_by_qtr = qtr_tbl %>% group_by(day_into_qtr) %>% summarise(agg_quarterly_return = mean(qtr_ret, na.rm=T))
+ttl_by_qtr = qtr_tbl %>% group_by(qtr, day_into_qtr) %>% summarise(agg_quarterly_return = mean(qtr_ret, na.rm=T))
 ttl_by_qtr
 agg_qtrly <- ggplot(data = ttl_by_qtr, aes(x=day_into_qtr, y=agg_quarterly_return)) +geom_line(aes(group = 1))
-agg_qtrly
+agg_qtrly + facet_wrap(~qtr)
 
 ```
 
@@ -196,7 +201,7 @@ norm_df$day_into_yr = as.Date(norm_df$date_time) - as.Date(norm_df$first_yr_day)
 
 yr_tbl = norm_df %>% group_by(Symbol, day_into_yr) %>% summarise(yr_ret=mean(day_ret))
 yr_tbl
-na.omit(norm_yr_tbl)
+na.omit(yr_tbl)
 yr_tbl
 # library(reshape2)
 # melted_yr = melt(norm_yr_tbl,id.vars=c('day_into_yr','Symbol') ,measure.vars='norm_yr')
@@ -214,23 +219,35 @@ agg_yrly
 ```
 ```{r}
 library(heatmaply)
-norm_df
-
-
 library(dplyr)
 library(tidyr)
-start_heatmap <- select(norm_df, Name, date_time, day_ret)
-start_heatmap$day_ret = as.numeric(start_heatmap$day_ret)
-start_heatmap
-corr_data = pivot_wider(start_heatmap,id_cols='Name', names_from='date_time', values_from='day_ret')
-corr_data
-cov(x=corr_data)
-?cor
-library(corrr)
-?spread
-correlate(corr_data)
-cor(x=corr_data$Aave,y=corr_data$Cardano)
 
-norm_df %>% group_by(Name, yr) %>% summarise(mean_daily_by_year = mean(yr_ret_mean))
+norm_df 
+new_df = norm_df %>% select(date_time, Name, day_ret)
+new_df
+new_mat = pivot_wider(new_df, names_from = 'Name', values_from = 'day_ret')
+new_mat$date_time = as.numeric(new_mat$date_time)
+new_mat
+corr_mat = cor(new_mat, use="pairwise.complete.obs")
+corrplot(corr_mat, method='number', type='lower') 
+
+
+
+```
+
+```{r}
+# start_heatmap <- select(norm_df, Name, date_time, day_ret)
+# start_heatmap$day_ret = as.numeric(start_heatmap$day_ret)
+# start_heatmap
+# corr_data = pivot_wider(start_heatmap,id_cols='Name', names_from='date_time', values_from='day_ret')
+# corr_data
+# cov(x=corr_data)
+# ?cor
+# library(corrr)
+# ?spread
+# correlate(corr_data)
+# cor(x=corr_data$Aave,y=corr_data$Cardano)
+# 
+# norm_df %>% group_by(Name, yr) %>% summarise(mean_daily_by_year = mean(yr_ret_mean))
 
 ```
