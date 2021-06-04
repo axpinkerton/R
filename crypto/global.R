@@ -3,7 +3,8 @@ library(ggplot2)
 library(dplyr)
 library(zoo)
 library(lubridate)
-coins = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/aggreg_coins.csv')
+coins = readr::read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/aggreg_coins.csv')
+og_coins = readr::read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/aggreg_coins.csv')
 head(coins)
 coins = na.omit(coins)
 coins$date_time = as.Date(coins$Date)
@@ -20,11 +21,9 @@ post$perc_in_mo_eod = as.numeric(post$day_in_mo)  / as.numeric(post$d_i_m)
 post
 
 #rollmean{zoo}
-cal <- read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/calendar.csv')
+cal <- readr::read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/calendar.csv')
 cal$date = as.Date(cal$date)
 cal
-
-
 
 wip <- post
 library(scales)
@@ -112,13 +111,13 @@ agg_daily <- ggplot(ttl_by_day, aes(x=wk_day_n, y=agg_daily_return)) +geom_line(
 agg_daily
 
 norm_df
-mo_tbl = norm_df %>% group_by(Name, mo, day_in_mo) %>% summarise(mo_ret_mean=mean(day_ret))
+mo_tbl = norm_df %>% group_by(Name, mo, day_in_mo, qtr) %>% summarise(mo_ret_mean=mean(day_ret))
 mo_tbl
-monthly_tbl <- mo_tbl %>% group_by(Name, day_in_mo) %>% summarise(mean(mo_ret_mean))
+monthly_tbl = mo_tbl %>% group_by(Name, day_in_mo) %>% summarise(mo_ret_mean = mean(mo_ret_mean))
 monthly_tbl
-na.omit(norm_mo_tbl)
 
-
+monthly_coin = mo_tbl %>% group_by(Name, mo, day_in_mo, qtr) %>% summarise(month_avg_return = mean(mo_ret_mean))
+monthly_coin
 # library(reshape2)
 # melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Name') ,measure.vars='norm_mo')
 # melted_mo
@@ -148,6 +147,9 @@ qtr_tbl = norm_df %>% group_by(Name, qtr, day_into_qtr) %>% summarise(qtr_ret=me
 
 na.omit(qtr_tbl)
 qtr_tbl
+
+quarterly_tbl = qtr_tbl %>% group_by(Name, day_into_qtr) %>% summarise (qtr_ret_mean = mean(qtr_ret))
+
 # library(reshape2)
 # melted_qtr = melt(norm_qtr_tbl,id.vars=c('day_into_qtr','Name') ,measure.vars='norm_qtr')
 # melted_qtr
@@ -187,7 +189,7 @@ library(dplyr)
 library(tidyr)
 library(corrplot)
 norm_df
-new_df = norm_df %>% select(date_time, Name, day_ret)
+new_df = norm_df %>% dplyr::select(date_time, Name, day_ret)
 new_df
 new_mat = pivot_wider(new_df, names_from = 'Name', values_from = 'day_ret')
 new_mat$date_time = as.numeric(new_mat$date_time)

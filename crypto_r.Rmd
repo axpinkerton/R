@@ -145,12 +145,14 @@ agg_daily
 norm_df
 mo_tbl = norm_df %>% group_by(Name, mo, day_in_mo) %>% summarise(mo_ret_mean=mean(day_ret))
 mo_tbl
-monthly_tbl <- mo_tbl %>% group_by(Name, day_in_mo) %>% summarise(mean(mo_ret_mean))
-monthly_tbl
-na.omit(norm_mo_tbl)
+monthly_tbl <- mo_tbl %>% group_by(Name, day_in_mo) %>% summarise(mo_ret_mean = mean(mo_ret_mean))
+monthly_coin = mo_tbl %>% group_by(Name, mo, day_in_mo) %>% summarise(month_avg_return = mean(mo_ret_mean))
+monthly_coin
+#na.omit(norm_mo_tbl)
 # library(reshape2)
 # melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Name') ,measure.vars='norm_mo')
 # melted_mo
+monthly_tbl
 all_Names_monthly <- ggplot(mo_tbl,aes(x=day_in_mo, y=mo_ret_mean, group=Name)) + geom_line(aes(colour=Name))
 all_Names_monthly + facet_wrap(~mo)
 
@@ -181,9 +183,9 @@ qtr_tbl = norm_df %>% group_by(Name, qtr, day_into_qtr) %>% summarise(qtr_ret=me
 
 na.omit(qtr_tbl)
 qtr_tbl
-# library(reshape2)
-# melted_qtr = melt(norm_qtr_tbl,id.vars=c('day_into_qtr','Name') ,measure.vars='norm_qtr')
-# melted_qtr
+
+quarterly_tbl = qtr_tbl %>% group_by(Name, day_into_qtr) %>% summarise (qtr_ret_mean = mean(qtr_ret))
+quarterly_tbl
 all_Names_quarterly <- ggplot(qtr_tbl,aes(x=day_into_qtr, y=qtr_ret, group=Name)) + geom_line(aes(colour=Name))
 
 all_Names_quarterly + facet_grid(~qtr)
@@ -225,7 +227,7 @@ library(dplyr)
 library(tidyr)
 
 norm_df
-new_df = norm_df %>% select(date_time, Name, day_ret)
+new_df = norm_df %>% dplyr::select(date_time, Name, day_ret)
 new_df
 new_mat = pivot_wider(new_df, names_from = 'Name', values_from = 'day_ret')
 new_mat$date_time = as.numeric(new_mat$date_time)

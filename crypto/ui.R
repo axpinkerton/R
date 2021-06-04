@@ -8,25 +8,20 @@
 #
 
 library(shiny)
+ui <-fluidPage(
 
-# Define UI for application that draws a histogram
-shinyUI(fluidPage(
+    titlePanel('Cryptocurrency Historical Trends'),
 
-    # Application title
-    titlePanel("Cryptocurrency Historical Trends"),
-
-    # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            selectInput(inputId='Name',
-                        label='Cryto Coin Name',
-                        choices=unique(norm_df$Name)
-        )),
-
-        # Show a plot of the generated distribution
+            selectInput(inputId = 'Name',
+                    label='Cryto Coin Name',
+                    choices=unique(norm_df$Name))),
         mainPanel(
-            plotOutput("daily"),
-            plotOutput("monthly")
-        )
-    )
+            tabsetPanel(type='tabs',
+                tabPanel('Returns by Day', plotOutput('specific_month')),
+                tabPanel('Dailies Aggregated', plotOutput('daily'),
+                         plotOutput('monthly'),plotOutput('quarterly'),
+                         plotOutput('yearly')))
+            )
 ))
