@@ -95,7 +95,7 @@ norm_df = sorted_df
 # norm_df$day_ret_norm_to_yr = ((norm_df$day_ret - norm_df$yr_ret_mean) / norm_df$yr_ret_sd)
 norm_df
 
-norm_df
+norm_df$qtr = substr(norm_df$qtr_yr,1,2)
 day_tbl = norm_df %>% group_by(Name, wk_day_n) %>% summarise(day_of_wk_ret =mean(day_ret))
 day_tbl
 # library(reshape2)
@@ -110,7 +110,7 @@ ttl_by_day
 agg_daily <- ggplot(ttl_by_day, aes(x=wk_day_n, y=agg_daily_return)) +geom_line()
 agg_daily
 
-norm_df
+
 mo_tbl = norm_df %>% group_by(Name, mo, day_in_mo, qtr) %>% summarise(mo_ret_mean=mean(day_ret))
 mo_tbl
 monthly_tbl = mo_tbl %>% group_by(Name, day_in_mo) %>% summarise(mo_ret_mean = mean(mo_ret_mean))
@@ -118,6 +118,24 @@ monthly_tbl
 
 monthly_coin = mo_tbl %>% group_by(Name, mo, day_in_mo, qtr) %>% summarise(month_avg_return = mean(mo_ret_mean))
 monthly_coin
+month_min = monthly_coin %>% group_by(Name, mo)%>%summarise(min = min(month_avg_return))
+month_min
+month_max = monthly_coin %>% group_by(Name, mo)%>%summarise(max = max(month_avg_return))
+month_max
+
+m  = norm_df %>% group_by(Name, mo, day_in_mo) %>% summarise(mo_ret_mean=mean(day_ret))
+m1 <- m %>% group_by(Name, mo) %>% summarise(max = max(mo_ret_mean), min = min(mo_ret_mean))
+m2 <- left_join(monthly_coin , m1, left_on=c(Name, mo), right_on=c(Name, mo))
+m2$max_day = m2$month_avg_return==m2$max
+m2$min_day = m2$month_avg_return==m2$min
+m2
+max_tbl = filter(m2, max_day==T)
+max_tbl
+min_tbl = filter(m2, min_day==T)
+max_tbl%>% select(Name,mo,day_in_mo)
+min_tbl
+
+
 # library(reshape2)
 # melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Name') ,measure.vars='norm_mo')
 # melted_mo
@@ -195,8 +213,8 @@ new_mat = pivot_wider(new_df, names_from = 'Name', values_from = 'day_ret')
 new_mat$date_time = as.numeric(new_mat$date_time)
 new_mat
 corr_mat = cor(new_mat, use="pairwise.complete.obs")
-corrplot(corr_mat, method='number', type='lower')
-
+c1 <- corrplot(corr_mat, method='number', type='lower')
+c1
 
 
 norm_df

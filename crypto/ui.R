@@ -19,9 +19,11 @@ ui <-fluidPage(
                     choices=unique(norm_df$Name))),
         mainPanel(
             tabsetPanel(type='tabs',
-                tabPanel('Returns by Day', plotOutput('specific_month')),
+                tabPanel('Returns by Day', plotOutput('specific_month'), tableOutput('max_table'), plotOutput('corr_tbl')),
                 tabPanel('Dailies Aggregated', plotOutput('daily'),
                          plotOutput('monthly'),plotOutput('quarterly'),
-                         plotOutput('yearly')))
-            )
+                         plotOutput('yearly')),
+                tabPanel('Raw Data', tableOutput('data_table'))
+                        )
 ))
+)

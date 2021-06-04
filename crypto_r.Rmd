@@ -148,6 +148,18 @@ mo_tbl
 monthly_tbl <- mo_tbl %>% group_by(Name, day_in_mo) %>% summarise(mo_ret_mean = mean(mo_ret_mean))
 monthly_coin = mo_tbl %>% group_by(Name, mo, day_in_mo) %>% summarise(month_avg_return = mean(mo_ret_mean))
 monthly_coin
+
+m  = norm_df %>% group_by(Name, mo, day_in_mo) %>% summarise(mo_ret_mean=mean(day_ret))
+m1 <- m %>% group_by(Name, mo) %>% summarise(max = max(mo_ret_mean), min = min(mo_ret_mean))
+m2 <- left_join(monthly_coin , m1, left_on=c(Name, mo), right_on=c(Name, mo))
+m2$max_day = m2$month_avg_return==m2$max
+m2$min_day = m2$month_avg_return==m2$min
+m2
+max_tbl = filter(m2, max_day==T)
+min_tbl = filter(m2, min_day==T)
+max_tbl
+min_tbl
+
 #na.omit(norm_mo_tbl)
 # library(reshape2)
 # melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Name') ,measure.vars='norm_mo')
