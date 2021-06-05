@@ -45,8 +45,8 @@ shinyServer(
             monthly_coin %>%
                 filter(Name == input$Name) %>%
                 ggplot(aes(x = day_in_mo, y = month_avg_return)) + geom_line(group=1) + facet_grid(~qtr+mo) +
-                labs (x = "Day of Month", y = "Avg. Returns by Qtr/Month/Day",
-                      title = "Returns by Month & Day")#+ gghighlight(max(month_avg_return,use_group_by=T,keep_scales=T))
+                labs (x = "Day of Month", y = "% Returns by Day",
+                      title = "Returns by Qtr / Month / Day")#+ gghighlight(max(month_avg_return,use_group_by=T,keep_scales=T))
         )
 
         output$data_table <- renderTable(
@@ -55,6 +55,10 @@ shinyServer(
         output$max_table <- renderTable(
             max_tbl %>% filter(Name==input$Name)%>%select(Name,mo,day_in_mo,max,max_day),bordered = T, caption="Historical Maximum Return Day by Month"
         )
+        output$min_table <- renderTable(
+            min_tbl %>% filter(Name==input$Name)%>%select(Name,mo,day_in_mo,min,min_day),bordered = T, caption="Historical Minimum Return Day by Month"
+        )
+
 
         output$corr_tbl <- renderPlot(
             corrplot(corr_mat, method='circle', type='lower')

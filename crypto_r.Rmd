@@ -173,8 +173,8 @@ all_Names_monthly + facet_wrap(~mo)
 # all_Names_monthly
 # melted_mo %>% group_by(Name) %>% top_n(1,value)
 
-ttl_by_mo = mo_tbl %>% group_by(day_in_mo, mo) %>% summarise(agg_monthly_return = mean(mo_ret, na.rm=T))
-ttl_by_mo_by_day =mo_tbl %>% group_by(day_in_mo) %>% summarise(agg_monthly_return = mean(mo_ret, na.rm=T))
+ttl_by_mo = mo_tbl %>% group_by(day_in_mo, mo) %>% summarise(agg_monthly_return = mean(mo_ret_mean, na.rm=T))
+ttl_by_mo_by_day =mo_tbl %>% group_by(day_in_mo) %>% summarise(agg_monthly_return = mean(mo_ret_mean, na.rm=T))
 
 agg_monthly <- ggplot(data = ttl_by_mo_by_day, aes(x=day_in_mo, y=agg_monthly_return)) +geom_line(aes(group = 1))
 agg_monthly
@@ -238,7 +238,29 @@ library(heatmaply)
 library(dplyr)
 library(tidyr)
 
+nasdaq = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/NASDAQ.csv')
+nyse = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/NYSE.csv')
+nasdaq
+nasdaq$nasdaq_day_ret = nasdaq$Close / nasdaq$Open - 1
+nyse$nyse_day_ret = nasdaq$Close / nasdaq$Open - 1
+nyse$Name = 'NYSE'
+nasdaq$Name = "NASDAQ"
+nyse_tbl = nyse %>% select(Name, Date, nyse_day_ret)
+nasdaq_tbl = nasdaq %>% select(Name, Date, nasdaq_day_ret)
+nyse_tbl = nyse_tbl %>% rename(date_time = Date, day_ret = nyse_day_ret)
+nyse_tbl
+nasdaq_tbl = nasdaq_tbl %>% rename(date_time = Date, day_ret = nasdaq_day_ret)
+nasdaq_tbl
 norm_df
+
+
+norm_df = bind_rows(norm_df,nyse_tbl)
+norm_df = bind_rows(norm_df,nasdaq_tbl)
+norm_df
+
+#norm_df = left_join(norm_df,nyse_tbl, by=c('date_time' = 'Date'))
+#norm_df = left_join(norm_df,nasdaq_tbl, by=c('date_time' = 'Date'))
+
 new_df = norm_df %>% dplyr::select(date_time, Name, day_ret)
 new_df
 new_mat = pivot_wider(new_df, names_from = 'Name', values_from = 'day_ret')
