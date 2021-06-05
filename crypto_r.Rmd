@@ -25,7 +25,7 @@ require(Hmisc)
 coins$d_i_m=monthDays(as.Date(coins$date_time))
 coins %>% group_by(Name, date_time) %>% summarise (open = Open, close = Close)
 coins
-post = coins[coins$date_time>'2015-12-31',]
+post = coins#[coins$date_time>'2015-12-31',]
 post$day_in_mo = substr(post$date_time,9,10)
 post$perc_in_mo_bod = (as.numeric(post$day_in_mo )-1) / as.numeric(post$d_i_m )
 post
@@ -126,6 +126,24 @@ norm_df
 norm_df
 day_tbl = norm_df %>% group_by(Name, wk_day_n) %>% summarise(day_of_wk_ret =mean(day_ret))
 day_tbl
+
+dow_max = day_tbl %>% group_by(Name) %>% summarise(max_dow = max(day_of_wk_ret))
+dow_max
+dow_min = day_tbl %>% group_by(Name) %>% summarise(min_dow = min(day_of_wk_ret))
+dow_min
+agg_max_min = left_join(day_tbl,dow_max, left_on ='Name',right_on='Name')
+agg_max_min
+agg_max_min = left_join(agg_max_min,dow_min, left_on ='Name',right_on='Name')
+
+agg_max_min$max_day = agg_max_min$max_dow == agg_max_min$day_of_wk_ret
+agg_max_min$min_day = agg_max_min$min_dow == agg_max_min$day_of_wk_ret
+
+final_max_min = agg_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_dow, max_day, min_dow, min_day) %>% filter(min_day==T | max_day==T)
+fin_day = final_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_day, min_day)
+fin_day
+```
+
+```{r}
 # library(reshape2)
 # melted_day = melt(day_tbl,id.vars=c('wk_day_n','Name') ,measure.vars='day_of_wk_ret')
 # melted_day
@@ -159,7 +177,26 @@ max_tbl = filter(m2, max_day==T)
 min_tbl = filter(m2, min_day==T)
 max_tbl
 min_tbl
+```
 
+```{r}
+monthly_max = monthly_tbl %>% group_by(Name)%>% summarise(max=max(mo_ret_mean))
+monthly_max
+monthly_min = monthly_tbl %>% group_by(Name)%>% summarise(min=min(mo_ret_mean))
+monthly_min
+
+mo_max_min = left_join(monthly_tbl, monthly_max, on='Name')
+mo_max_min = left_join(mo_max_min, monthly_min, on='Name')
+mo_max_min$max_day = mo_max_min$max == mo_max_min$mo_ret_mean
+mo_max_min$min_day = mo_max_min$min == mo_max_min$mo_ret_mean
+mo_max_min
+
+final_mo = mo_max_min %>% select(Name, day_in_mo, mo_ret_mean, max_day, min_day) %>% filter(max_day==T | min_day==T)
+final_mo
+
+```
+
+```{r}
 #na.omit(norm_mo_tbl)
 # library(reshape2)
 # melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Name') ,measure.vars='norm_mo')
@@ -211,6 +248,16 @@ agg_qtrly + facet_wrap(~qtr)
 ```
 
 ```{r}
+q_tbl = quarterly_tbl %>% group_by(Name) %>% summarise(max=max(qtr_ret_mean), min = min(qtr_ret_mean))
+q_tbl
+q_wip = left_join(quarterly_tbl,q_tbl, on='Name')
+q_wip$q_max = q_wip$qtr_ret_mean==q_wip$max
+q_wip$q_min = q_wip$qtr_ret_mean==q_wip$min
+qtr_fin = q_wip %>% select(Name, day_into_qtr, qtr_ret_mean, q_max, q_min) %>% filter(q_max==T | q_min==T)
+qtr_fin
+```
+
+```{r}
 norm_df
 norm_df$first_yr_day = paste0(norm_df$yr,'-01-01')
 norm_df$day_into_yr = as.Date(norm_df$date_time) - as.Date(norm_df$first_yr_day) +1
@@ -231,8 +278,20 @@ ttl_by_yr = yr_tbl %>% group_by(day_into_yr) %>% summarise(agg_yearly_return = m
 ttl_by_yr
 agg_yrly <- ggplot(data = ttl_by_yr, aes(x=day_into_yr, y=agg_yearly_return)) +geom_line(aes(group = 1))
 agg_yrly
-
 ```
+
+```{r}
+yr_wip = yr_tbl %>% group_by(Name) %>% summarise(max =max(yr_ret), min = min(yr_ret))
+
+yr_wip2 = left_join(yr_tbl, yr_wip, by='Name')
+yr_wip2$max_day_y = yr_wip2$max == yr_wip2$yr_ret
+yr_wip2$min_day_y = yr_wip2$min == yr_wip2$yr_ret
+
+yr_fin = yr_wip2 %>% select(Name, day_into_yr, yr_ret, max_day_y, min_day_y)%>%filter(max_day_y==T | min_day_y==T)
+
+yr_fin
+```
+
 ```{r}
 library(heatmaply)
 library(dplyr)

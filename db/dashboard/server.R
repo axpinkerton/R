@@ -59,7 +59,24 @@ shinyServer(
             output$min_table <- renderTable(
                 min_tbl %>% filter(Name==input$Name)%>%select(Name,mo,day_in_mo,min,min_day),bordered = T, caption="Historical Minimum Return Day by Month"
             )
+#
+            output$agg_d <- renderTable(
+                fin_day %>% filter(Name==input$Name),bordered = T, caption="Max/Min Day of Wk"
+            )
 
+            output$agg_m <- renderTable(
+                final_mo %>% filter(Name==input$Name),bordered = T, caption="Max/Min Day of Month"
+            )
+
+            output$agg_q <- renderTable(
+                qtr_fin %>% filter(Name==input$Name),bordered = T, caption="Max/Min Day of Qtr"
+            )
+
+            output$agg_y <- renderTable(
+                yr_fin %>% filter(Name==input$Name),bordered = T, caption="Max/Min Day of Year"
+            )
+
+#
             output$corr_tbl <- renderPlot(
                 corrplot(corr_mat, method='circle', type='lower')
             )

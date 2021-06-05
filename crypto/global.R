@@ -13,7 +13,7 @@ require(Hmisc)
 coins$d_i_m=monthDays(as.Date(coins$date_time))
 coins %>% group_by(Name, date_time) %>% summarise (open = Open, close = Close)
 coins
-post = coins[coins$date_time>'2015-12-31',]
+post = coins#[coins$date_time>'2015-12-31',]
 post$day_in_mo = substr(post$date_time,9,10)
 post$perc_in_mo_bod = (as.numeric(post$day_in_mo )-1) / as.numeric(post$d_i_m )
 post

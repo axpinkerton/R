@@ -13,7 +13,7 @@ require(Hmisc)
 coins$d_i_m=monthDays(as.Date(coins$date_time))
 coins %>% group_by(Name, date_time) %>% summarise (open = Open, close = Close)
 coins
-post = coins[coins$date_time>'2015-12-31',]
+post = coins#[coins$date_time>'2015-12-31',]
 post$day_in_mo = substr(post$date_time,9,10)
 post$perc_in_mo_bod = (as.numeric(post$day_in_mo )-1) / as.numeric(post$d_i_m )
 post
@@ -245,20 +245,56 @@ hi_in_qtr = norm_df %>% group_by(Name, yr, qtr) %>% summarise(highest_day_qtr=ma
 
 hi_in_yr = norm_df %>% group_by(Name, yr) %>% summarise(highest_day_yr=max(day_ret),lowest_day_yr = min(day_ret))
 
+###
+dow_max = day_tbl %>% group_by(Name) %>% summarise(max_dow = max(day_of_wk_ret))
+dow_max
+dow_min = day_tbl %>% group_by(Name) %>% summarise(min_dow = min(day_of_wk_ret))
+dow_min
+agg_max_min = left_join(day_tbl,dow_max, left_on ='Name',right_on='Name')
+agg_max_min
+agg_max_min = left_join(agg_max_min,dow_min, left_on ='Name',right_on='Name')
 
-# start_heatmap <- select(norm_df, Name, date_time, day_ret)
-# start_heatmap$day_ret = as.numeric(start_heatmap$day_ret)
-# start_heatmap
-# corr_data = pivot_wider(start_heatmap,id_cols='Name', names_from='date_time', values_from='day_ret')
-# corr_data
-# cov(x=corr_data)
-# ?cor
-# library(corrr)
-# ?spread
-# correlate(corr_data)
-# cor(x=corr_data$Aave,y=corr_data$Cardano)
-#
-# norm_df %>% group_by(Name, yr) %>% summarise(mean_daily_by_year = mean(yr_ret_mean))
+agg_max_min$max_day = agg_max_min$max_dow == agg_max_min$day_of_wk_ret
+agg_max_min$min_day = agg_max_min$min_dow == agg_max_min$day_of_wk_ret
 
+final_max_min = agg_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_dow,
+                                       max_day, min_dow, min_day) %>%
+                                     filter(min_day==T | max_day==T)
+fin_day = final_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_day,
+                                   min_day)
+fin_day
+###
+monthly_max = monthly_tbl %>% group_by(Name)%>% summarise(max=max(mo_ret_mean))
+monthly_max
+monthly_min = monthly_tbl %>% group_by(Name)%>% summarise(min=min(mo_ret_mean))
+monthly_min
+
+mo_max_min = left_join(monthly_tbl, monthly_max, on='Name')
+mo_max_min = left_join(mo_max_min, monthly_min, on='Name')
+mo_max_min$max_day = mo_max_min$max == mo_max_min$mo_ret_mean
+mo_max_min$min_day = mo_max_min$min == mo_max_min$mo_ret_mean
+mo_max_min
+
+final_mo = mo_max_min %>% select(Name, day_in_mo, mo_ret_mean, max_day, min_day) %>% filter(max_day==T | min_day==T)
+final_mo
+###
+q_tbl = quarterly_tbl %>% group_by(Name) %>% summarise(max=max(qtr_ret_mean), min = min(qtr_ret_mean))
+q_tbl
+q_wip = left_join(quarterly_tbl,q_tbl, on='Name')
+q_wip$q_max = q_wip$qtr_ret_mean==q_wip$max
+q_wip$q_min = q_wip$qtr_ret_mean==q_wip$min
+qtr_fin = q_wip %>% select(Name, day_into_qtr, qtr_ret_mean, q_max, q_min) %>% filter(q_max==T | q_min==T)
+qtr_fin
+###
+yr_wip = yr_tbl %>% group_by(Name) %>% summarise(max =max(yr_ret), min = min(yr_ret))
+
+yr_wip2 = left_join(yr_tbl, yr_wip, by='Name')
+yr_wip2$max_day_y = yr_wip2$max == yr_wip2$yr_ret
+yr_wip2$min_day_y = yr_wip2$min == yr_wip2$yr_ret
+
+yr_fin = yr_wip2 %>% select(Name, day_into_yr, yr_ret, max_day_y, min_day_y)%>%filter(max_day_y==T | min_day_y==T)
+
+yr_fin
+###
 coins
 
