@@ -18,7 +18,7 @@ shinyServer(
                     ggplot(aes(x = wk_day_n, y = day_of_wk_ret)) +
                     geom_line() +
                     ggtitle("Avg. Returns by Weekday") +
-                    labs (x = "Weekday Num (0=Sunday...)", y = "Avg. Returns per Day")
+                    labs (x = "Weekday Num (1=Sunday...)", y = "Avg. Returns per Day")
             )
 
             output$monthly <- renderPlot(
@@ -51,7 +51,7 @@ shinyServer(
             )
 
             output$data_table <- renderTable(
-                tail(coins,15)
+                head(coins,15)
             )
             output$max_table <- renderTable(
                 max_tbl %>% filter(Name==input$Name)%>%select(Name,mo,day_in_mo,max,max_day),bordered = T, caption="Historical Maximum Return Day by Month"
