@@ -17,7 +17,7 @@ ui <- dashboardPage(
 image='https://d92mrp7hetgfk.cloudfront.net/images/
 sites/misc/nycdsa/original.jpg?1568414524'),
         selectInput(inputId = 'Name',
-                                 label='Cryto Coin Name',
+                                 label='Crypto Coin Name',
                                  choices=unique(coins$Name)),
         sidebarMenu(
             menuItem('Returns', tabName='Returns', icon = icon("bitcoin")),
