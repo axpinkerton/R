@@ -16,71 +16,73 @@ library(ggplot2)
 library(dplyr)
 library(zoo)
 library(lubridate)
-coins = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/aggreg_coins.csv')
-head(coins)
-coins = na.omit(coins)
-coins$date_time = as.Date(coins$Date)
-coins$weekday = weekdays.Date(coins$date_time)
+coins = read_csv('./aggreg_coins.csv') #loading in original dataset
+head(coins) #inspecting 
+coins = na.omit(coins) #getting rid of the n/a's (there weren't many)
+coins$date_time = as.Date(coins$Date) #converting over the timestamp to just date
+coins$weekday = weekdays.Date(coins$date_time) #getting a new column with the weekday
 require(Hmisc)
-coins$d_i_m=monthDays(as.Date(coins$date_time))
+coins$d_i_m=monthDays(as.Date(coins$date_time)) #getting the day of the month
 coins %>% group_by(Name, date_time) %>% summarise (open = Open, close = Close)
 coins
-post = coins#[coins$date_time>'2015-12-31',]
-post$day_in_mo = substr(post$date_time,9,10)
+post = coins #[coins$date_time>'2015-12-31',] Setting to a new df that i can keep working on 
+post$day_in_mo = substr(post$date_time,9,10) #extracting just the day of month in a new column
 post$perc_in_mo_bod = (as.numeric(post$day_in_mo )-1) / as.numeric(post$d_i_m )
 post
+#getting the percent in to the total of a given month, in percent, for the beginning of the day
 post$perc_in_mo_eod = as.numeric(post$day_in_mo)  / as.numeric(post$d_i_m)
 post
-
+#getting the percent in to the total of a given month, in percent, for the end of the day
 #rollmean{zoo}
 ```
 ```{r}
 cal <- read_csv('./calendar.csv')
 cal$date = as.Date(cal$date)
 cal
+#dropping in external data csv that i made
 ```
 
 
 
 ```{r}
-wip <- post
+wip <- post #assigninng to a new df that i continue to work on
 library(scales)
-wip$day_ret = (wip$Close / wip$Open)-1
+wip$day_ret = (wip$Close / wip$Open)-1 #getting the returns on a percent basis, by day to normalise across all crypto's
 
 wip$date_time
 cal$date
 
-full_df <- merge(wip,cal,by.x='date_time',by.y='date')
-full_df %>% ungroup %>% arrange(desc('date_time'),'Name')
-sorted_df = arrange(full_df, Name, date_time ,by_group=F)
-sorted_df
-sorted_df$mo_yr = paste0(substr(sorted_df$date_time,6,7),"-",substr(sorted_df$date_time,1,4))
+full_df <- merge(wip,cal,by.x='date_time',by.y='date') #merging calendar info into a new full dataframe
+full_df %>% ungroup %>% arrange(desc('date_time'),'Name') #sorting the new full data frame
+sorted_df = arrange(full_df, Name, date_time ,by_group=F) #sub sorting
+sorted_df #inspecting
+sorted_df$mo_yr = paste0(substr(sorted_df$date_time,6,7),"-",substr(sorted_df$date_time,1,4)) #dropping in the month-year 
 sorted_df
 
 weekly_ret = group_by(sorted_df, Name, wk_num) %>% summarise(wk_ret_mean=mean(day_ret),wk_ret_sd=sd(day_ret))
-weekly_ret
+weekly_ret #summary of the weekly returns, aggregated by coin and week number, means and standard dev's 
 ```
 
 ```{r}
 sorted_df
-monthly_ret = group_by(sorted_df, Name, mo_yr) %>% summarise(mo_ret_mean=mean(day_ret),mo_ret_sd=sd(day_ret))
+monthly_ret = group_by(sorted_df, Name, mo_yr) %>% summarise(mo_ret_mean=mean(day_ret),mo_ret_sd=sd(day_ret)) #doing a similar summary on the monthly level, has concatenated month-year
 monthly_ret
 
 ```
 ```{r}
-sorted_df$yr = substr(sorted_df$date_time,1,4)
-sorted_df$mo = substr(sorted_df$date_time,6,7)
+sorted_df$yr = substr(sorted_df$date_time,1,4) #getting a year column on its own
+sorted_df$mo = substr(sorted_df$date_time,6,7)#getting month on its own
 
 
-sorted_df$qtr_yr = paste(ifelse(sorted_df$mo %in% c('01','02','03'), '01', ifelse(sorted_df$mo %in% c('04','05','06'), '02',ifelse(sorted_df$mo %in% c('07','08','09'), '03','04'))),'-',sorted_df$yr)
+sorted_df$qtr_yr = paste(ifelse(sorted_df$mo %in% c('01','02','03'), '01', ifelse(sorted_df$mo %in% c('04','05','06'), '02',ifelse(sorted_df$mo %in% c('07','08','09'), '03','04'))),'-',sorted_df$yr) #creating a column for the quarter based on the month number 
 
-gsub(' ','',sorted_df$qtr_yr)
+gsub(' ','',sorted_df$qtr_yr) #getting rid of whitespace in the qtr column
 
 sorted_df
-yearly_ret = group_by(sorted_df, Name, yr) %>% summarise(yr_ret_mean=mean(day_ret),yr_ret_sd=sd(day_ret))
+yearly_ret = group_by(sorted_df, Name, yr) %>% summarise(yr_ret_mean=mean(day_ret),yr_ret_sd=sd(day_ret)) #making a yearly summary table
 yearly_ret
 
-qtrly_ret = group_by(sorted_df, Name, qtr_yr) %>% summarise(qtr_ret_mean=mean(day_ret),qtr_ret_sd=sd(day_ret))
+qtrly_ret = group_by(sorted_df, Name, qtr_yr) %>% summarise(qtr_ret_mean=mean(day_ret),qtr_ret_sd=sd(day_ret)) #Quarterly summary dataframe 
 qtrly_ret
 
 ```
@@ -92,41 +94,32 @@ sorted_df
 
 weekly_ret
 sorted_df = left_join(sorted_df, weekly_ret, by=c('Name' = 'Name', 'wk_num' = 'wk_num'))
-wk
+
 
 monthly_ret
 sorted_df = left_join(sorted_df, monthly_ret, by=c('Name' = 'Name', 'mo_yr' = 'mo_yr'))
-mo
+
 
 qtrly_ret
 sorted_df = left_join(sorted_df,qtrly_ret, by = c('Name' ='Name' , 'qtr_yr' = 'qtr_yr'))
 
 yearly_ret
 sorted_df = left_join(sorted_df,yearly_ret, by = c('Name' ='Name' , 'yr' = 'yr'))
-
-# sorted_df = sorted_df %>% rename(wk_ret_mean = norm_wk_ret_mean, wk_ret_sd = norm_wk_ret_sd, mo_ret_mean = norm_mo_ret_mean, mo_ret_sd = norm_mo_ret_sd, qtr_ret_mean = norm_qtr_ret_mean, qtr_ret_sd = norm_qtr_ret_sd, yr_ret_mean = norm_yr_ret_mean, yr_ret_sd = norm_yr_ret_sd)
+##Getting the Summary info by week, month, qtr, and year into the main dataframee
 
 sorted_df
-
-#weekly_returns_normalized = ( returns - avg_ret_per_wk ) / norm_wk_ret_sd
-
 ```
-```{r}
-#Normalizing daily returns to the week, month, quarter, and year
 
+```{r}
 norm_df = sorted_df
-# norm_df$day_ret_norm_to_wk = ((norm_df$day_ret - norm_df$wk_ret_mean) / norm_df$wk_ret_sd)
-# norm_df$day_ret_norm_to_mo = ((norm_df$day_ret - norm_df$mo_ret_mean) / norm_df$mo_ret_sd)
-# norm_df$day_ret_norm_to_qtr = ((norm_df$day_ret - norm_df$qtr_ret_mean) / norm_df$qtr_ret_sd)
-# norm_df$day_ret_norm_to_yr = ((norm_df$day_ret - norm_df$yr_ret_mean) / norm_df$yr_ret_sd)
 norm_df
 ```
 ```{r}
-
+#Aggregating for the day of week regardless of the week, summary
 norm_df
 day_tbl = norm_df %>% group_by(Name, wk_day_n) %>% summarise(day_of_wk_ret =mean(day_ret))
 day_tbl
-
+#Getting the associated min and max days, for table output in shiny
 dow_max = day_tbl %>% group_by(Name) %>% summarise(max_dow = max(day_of_wk_ret))
 dow_max
 dow_min = day_tbl %>% group_by(Name) %>% summarise(min_dow = min(day_of_wk_ret))
@@ -145,8 +138,7 @@ fin_day
 
 ```{r}
 # library(reshape2)
-# melted_day = melt(day_tbl,id.vars=c('wk_day_n','Name') ,measure.vars='day_of_wk_ret')
-# melted_day
+#All coins, aggregated by day of wk
 all_Names_daily <- ggplot(day_tbl, aes(x=wk_day_n, y=day_of_wk_ret, col=Name)) + geom_line()
 all_Names_daily
 # melted %>% group_by(Name) %>% top_n(1,value)
@@ -154,12 +146,14 @@ day_tbl
 ttl_by_day = day_tbl %>% group_by(wk_day_n) %>% summarise(agg_daily_return = mean(day_of_wk_ret, na.rm=T))
 ttl_by_day
 agg_daily <- ggplot(ttl_by_day, aes(x=wk_day_n, y=agg_daily_return)) +geom_line()
+#Graph of all of the coins aggregated by day of wk
 agg_daily
 
 ```
 
 
 ```{r}
+#Doing the same graph summary, by month this time. By coin and then at the aggregate, with a table output for Shiny
 norm_df
 mo_tbl = norm_df %>% group_by(Name, mo, day_in_mo) %>% summarise(mo_ret_mean=mean(day_ret))
 mo_tbl
@@ -180,6 +174,7 @@ min_tbl
 ```
 
 ```{r}
+#Max and min days at the month level, by coin, for table output for Shiny
 monthly_max = monthly_tbl %>% group_by(Name)%>% summarise(max=max(mo_ret_mean))
 monthly_max
 monthly_min = monthly_tbl %>% group_by(Name)%>% summarise(min=min(mo_ret_mean))
@@ -199,17 +194,16 @@ final_mo
 ```{r}
 #na.omit(norm_mo_tbl)
 # library(reshape2)
-# melted_mo = melt(norm_mo_tbl,id.vars=c('day_in_mo','Name') ,measure.vars='norm_mo')
-# melted_mo
+
 monthly_tbl
 all_Names_monthly <- ggplot(mo_tbl,aes(x=day_in_mo, y=mo_ret_mean, group=Name)) + geom_line(aes(colour=Name))
 all_Names_monthly + facet_wrap(~mo)
 
 ```
 ```{r}
-# all_Names_monthly
 # melted_mo %>% group_by(Name) %>% top_n(1,value)
 
+#Doing the same week functions to the month--by coin and then aggregated 
 ttl_by_mo = mo_tbl %>% group_by(day_in_mo, mo) %>% summarise(agg_monthly_return = mean(mo_ret_mean, na.rm=T))
 ttl_by_mo_by_day =mo_tbl %>% group_by(day_in_mo) %>% summarise(agg_monthly_return = mean(mo_ret_mean, na.rm=T))
 
@@ -218,6 +212,7 @@ agg_monthly
 
 ```
 ```{r}
+##Doing a lot of transformations for the date here--essentially i'm getting the first day of the quarter, depending on the quarter, and then figuring out what day the observation represents with respect to that quarter
 norm_df$mo_day = substr(norm_df$date_time,6,10)
 norm_df$first_qtr_day =paste(norm_df$yr,'-', ifelse(substr(norm_df$qtr_yr,1,2)=='01','01-01',ifelse(substr(norm_df$qtr_yr,1,2)=='02','04-01',ifelse(substr(norm_df$qtr_yr,1,2)=='03','07-01','10-01'))))
 norm_df$first_qtr_day = gsub(" ", "",norm_df$first_qtr_day)
@@ -232,7 +227,7 @@ qtr_tbl = norm_df %>% group_by(Name, qtr, day_into_qtr) %>% summarise(qtr_ret=me
 
 na.omit(qtr_tbl)
 qtr_tbl
-
+##And then doing the same functions to aggregate at the quarter level--summaries for each coin and then total level
 quarterly_tbl = qtr_tbl %>% group_by(Name, day_into_qtr) %>% summarise (qtr_ret_mean = mean(qtr_ret))
 quarterly_tbl
 all_Names_quarterly <- ggplot(qtr_tbl,aes(x=day_into_qtr, y=qtr_ret, group=Name)) + geom_line(aes(colour=Name))
@@ -248,6 +243,7 @@ agg_qtrly + facet_wrap(~qtr)
 ```
 
 ```{r}
+#Making a day for table output in Shiny, quarter max and min days
 q_tbl = quarterly_tbl %>% group_by(Name) %>% summarise(max=max(qtr_ret_mean), min = min(qtr_ret_mean))
 q_tbl
 q_wip = left_join(quarterly_tbl,q_tbl, on='Name')
@@ -258,6 +254,7 @@ qtr_fin
 ```
 
 ```{r}
+#Year calendar transformations--getting the first day of the year and subtracting the date to get the day of the year. Then summarizing the year info by coin and aggregated totals
 norm_df
 norm_df$first_yr_day = paste0(norm_df$yr,'-01-01')
 norm_df$day_into_yr = as.Date(norm_df$date_time) - as.Date(norm_df$first_yr_day) +1
@@ -281,6 +278,7 @@ agg_yrly
 ```
 
 ```{r}
+#Max and min tables for output in shiny
 yr_wip = yr_tbl %>% group_by(Name) %>% summarise(max =max(yr_ret), min = min(yr_ret))
 
 yr_wip2 = left_join(yr_tbl, yr_wip, by='Name')
@@ -296,9 +294,9 @@ yr_fin
 library(heatmaply)
 library(dplyr)
 library(tidyr)
-
-nasdaq = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/NASDAQ.csv')
-nyse = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/NYSE.csv')
+#Dropping in the NYSE and Nasdaq info for correlation table, doing some conversion to get there
+nasdaq = read_csv('./NASDAQ.csv')
+nyse = read_csv('./NYSE.csv')
 nasdaq
 nasdaq$nasdaq_day_ret = nasdaq$Close / nasdaq$Open - 1
 nyse$nyse_day_ret = nasdaq$Close / nasdaq$Open - 1
@@ -312,14 +310,12 @@ nasdaq_tbl = nasdaq_tbl %>% rename(date_time = Date, day_ret = nasdaq_day_ret)
 nasdaq_tbl
 norm_df
 
-
+#Binding rows into the original coin DF
 norm_df = bind_rows(norm_df,nyse_tbl)
 norm_df = bind_rows(norm_df,nasdaq_tbl)
 norm_df
 
-#norm_df = left_join(norm_df,nyse_tbl, by=c('date_time' = 'Date'))
-#norm_df = left_join(norm_df,nasdaq_tbl, by=c('date_time' = 'Date'))
-
+#Making a correlation matrix and then a correlation plot on that matrix
 new_df = norm_df %>% dplyr::select(date_time, Name, day_ret)
 new_df
 new_mat = pivot_wider(new_df, names_from = 'Name', values_from = 'day_ret')
@@ -333,6 +329,7 @@ corrplot(corr_mat, method='number', type='lower')
 ```
 
 ```{r}
+#Table outputs for Shiny with Hi by day of mo/qtr/yr
 norm_df
 hi_in_mo = norm_df %>% group_by(Name, yr, mo) %>% summarise(highest_day_mo=max(day_ret),lowest_day_mo = min(day_ret))
 

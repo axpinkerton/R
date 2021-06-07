@@ -1,0 +1,13 @@
+name: dashboard
+title: dashboard
+username:
+account: axpinkerton
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4236106
+bundleId: 4685158
+url: https://axpinkerton.shinyapps.io/dashboard/
+when: 1623022848.7906
+lastSyncTime: 1623022848.79061
+asMultiple: FALSE
+asStatic: FALSE

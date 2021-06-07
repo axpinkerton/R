@@ -3,8 +3,8 @@ library(ggplot2)
 library(dplyr)
 library(zoo)
 library(lubridate)
-coins = readr::read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/aggreg_coins.csv')
-og_coins = readr::read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/aggreg_coins.csv')
+coins = read_csv('./aggreg_coins.csv')
+og_coins = readr::read_csv('./aggreg_coins.csv')
 head(coins)
 coins = na.omit(coins)
 coins$date_time = as.Date(coins$Date)
@@ -21,7 +21,7 @@ post$perc_in_mo_eod = as.numeric(post$day_in_mo)  / as.numeric(post$d_i_m)
 post
 
 #rollmean{zoo}
-cal <- readr::read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/calendar.csv')
+cal <- readr::read_csv('./calendar.csv')
 cal$date = as.Date(cal$date)
 cal
 
@@ -68,11 +68,11 @@ sorted_df
 
 weekly_ret
 sorted_df = left_join(sorted_df, weekly_ret, by=c('Name' = 'Name', 'wk_num' = 'wk_num'))
-wk
+
 
 monthly_ret
 sorted_df = left_join(sorted_df, monthly_ret, by=c('Name' = 'Name', 'mo_yr' = 'mo_yr'))
-mo
+
 
 qtrly_ret
 sorted_df = left_join(sorted_df,qtrly_ret, by = c('Name' ='Name' , 'qtr_yr' = 'qtr_yr'))
@@ -206,8 +206,8 @@ library(heatmaply)
 library(dplyr)
 library(tidyr)
 library(corrplot)
-nasdaq = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/NASDAQ.csv')
-nyse = read_csv('/Users/APinkerton/NYC_DS_A/R-direc/R/R/NYSE.csv')
+nasdaq = read_csv('./NASDAQ.csv')
+nyse = read_csv('./NYSE.csv')
 nasdaq
 nasdaq$nasdaq_day_ret = nasdaq$Close / nasdaq$Open - 1
 nyse$nyse_day_ret = nasdaq$Close / nasdaq$Open - 1
