@@ -20,14 +20,18 @@ sites/misc/nycdsa/original.jpg?1568414524'),
                                  label='Crypto Coin Name',
                                  choices=unique(coins$Name)),
         sidebarMenu(
+            menuItem('Introduction', tabName='intro', icon = icon("bars")),
             menuItem('Returns', tabName='Returns', icon = icon("bitcoin")),
             menuItem("Dailies Aggregated", tabName ="da",
                      icon = icon("ethereum")),
-            menuItem('Raw Data', tabName="raw",icon = icon("money-bill"))
+            menuItem('Raw Data', tabName="raw",icon = icon("money-bill")),
+            menuItem('Conclusion & Contact', tabName='conc', icon = icon("book-open"))
             )
     ),
     dashboardBody(
         tabItems(
+            tabItem('intro',
+                box(title='Background Information',textOutput('intro_txt'),width=12)),
             tabItem('da',
                    box(plotOutput('daily'), width=12),
                    box(tableOutput('agg_d'),width=12),
@@ -43,7 +47,11 @@ sites/misc/nycdsa/original.jpg?1568414524'),
                 box(tableOutput('min_table'),width=12),
 		        box(plotOutput('corr_tbl'),width=12)),
             tabItem('raw',
-                    box(tableOutput('data_table'),width=12))
+                    box(tableOutput('data_table'),width=12)),
+            tabItem('conc',
+                    box(title='Conclusion & Contact',textOutput('conc1'),width=12),
+                    box(textOutput('conc2'),width=12))
+
 )
 )
 )

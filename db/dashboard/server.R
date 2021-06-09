@@ -54,12 +54,14 @@ shinyServer(
                 head(coins,15)
             )
             output$max_table <- renderTable(
-                max_tbl %>% filter(Name==input$Name)%>%select(Name,mo,day_in_mo,max,max_day),bordered = T, caption="Historical Maximum Return Day by Month"
+                max_tbl %>% filter(Name==input$Name)%>%dplyr::select(Name,mo,day_in_mo,max,max_day),bordered = T, caption="Historical Maximum Return Day by Month"
             )
             output$min_table <- renderTable(
-                min_tbl %>% filter(Name==input$Name)%>%select(Name,mo,day_in_mo,min,min_day),bordered = T, caption="Historical Minimum Return Day by Month"
+                min_tbl %>% filter(Name==input$Name)%>%dplyr::select(Name,mo,day_in_mo,min,min_day),bordered = T, caption="Historical Minimum Return Day by Month"
             )
 #
+            output$intro_txt <- renderText('The purpose of this app is to give users background information for the Historical Pricing of Cryptocurrency.
+                                           On Coinbase, there is a prompt to schedule investments, so I wanted to create an app that could show what has historically been the best time to schedule investments at the weekly, monthly, quarterly, and yearly levels. For additional background information, if you do not want to schedule investments at the same time each week, month, etc. I wanted to show the best and worst times of specific quarters/months to create a more robust historical context for investment schedules. Additionally, if you are looking to Cryptocurrencies with hedging in mind, I wanted to provide a correlation plot with information between Crypto Coins and to the USD Coin (pegged to the value of the US Dollar) and the NYSE and Nasdaq Composites.')
             output$agg_d <- renderTable(
                 fin_day %>% filter(Name==input$Name),bordered = T, caption="Max/Min Day of Wk"
             )
@@ -80,4 +82,6 @@ shinyServer(
             output$corr_tbl <- renderPlot(
                 corrplot(corr_mat, method='circle', type='lower')
             )
+            output$conc1 <- renderText('Hopefully you found this app useful in your quest to learn more about the nature of Cryptocurrency markets. Please note that none of the information in this app constitutes investment advice. Feel free to reach out to me on my LinkedIn page below if you have any questions. Thank you for viewing!')
+            output$conc2 <- renderText('https://www.linkedin.com/in/alexanderpinkerton/')
 })

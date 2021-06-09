@@ -133,7 +133,6 @@ m2
 max_tbl = filter(m2, max_day==T)
 max_tbl
 min_tbl = filter(m2, min_day==T)
-max_tbl%>% select(Name,mo,day_in_mo)
 min_tbl
 
 
@@ -214,8 +213,8 @@ nasdaq$nasdaq_day_ret = nasdaq$Close / nasdaq$Open - 1
 nyse$nyse_day_ret = nasdaq$Close / nasdaq$Open - 1
 nyse$Name = 'NYSE'
 nasdaq$Name = "NASDAQ"
-nyse_tbl = nyse %>% select(Name, Date, nyse_day_ret)
-nasdaq_tbl = nasdaq %>% select(Name, Date, nasdaq_day_ret)
+nyse_tbl = nyse %>% dplyr::select(Name, Date, nyse_day_ret)
+nasdaq_tbl = nasdaq %>% dplyr::select(Name, Date, nasdaq_day_ret)
 nyse_tbl = nyse_tbl %>% rename(date_time = Date, day_ret = nyse_day_ret)
 nyse_tbl
 nasdaq_tbl = nasdaq_tbl %>% rename(date_time = Date, day_ret = nasdaq_day_ret)
@@ -258,10 +257,10 @@ agg_max_min = left_join(agg_max_min,dow_min, left_on ='Name',right_on='Name')
 agg_max_min$max_day = agg_max_min$max_dow == agg_max_min$day_of_wk_ret
 agg_max_min$min_day = agg_max_min$min_dow == agg_max_min$day_of_wk_ret
 
-final_max_min = agg_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_dow,
+final_max_min = agg_max_min %>% dplyr::select(Name, wk_day_n, day_of_wk_ret, max_dow,
                                        max_day, min_dow, min_day) %>%
                                      filter(min_day==T | max_day==T)
-fin_day = final_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_day,
+fin_day = final_max_min %>% dplyr::select(Name, wk_day_n, day_of_wk_ret, max_day,
                                    min_day)
 fin_day
 ###
@@ -276,7 +275,7 @@ mo_max_min$max_day = mo_max_min$max == mo_max_min$mo_ret_mean
 mo_max_min$min_day = mo_max_min$min == mo_max_min$mo_ret_mean
 mo_max_min
 
-final_mo = mo_max_min %>% select(Name, day_in_mo, mo_ret_mean, max_day, min_day) %>% filter(max_day==T | min_day==T)
+final_mo = mo_max_min %>% dplyr::select(Name, day_in_mo, mo_ret_mean, max_day, min_day) %>% filter(max_day==T | min_day==T)
 final_mo
 ###
 q_tbl = quarterly_tbl %>% group_by(Name) %>% summarise(max=max(qtr_ret_mean), min = min(qtr_ret_mean))
@@ -284,7 +283,7 @@ q_tbl
 q_wip = left_join(quarterly_tbl,q_tbl, on='Name')
 q_wip$q_max = q_wip$qtr_ret_mean==q_wip$max
 q_wip$q_min = q_wip$qtr_ret_mean==q_wip$min
-qtr_fin = q_wip %>% select(Name, day_into_qtr, qtr_ret_mean, q_max, q_min) %>% filter(q_max==T | q_min==T)
+qtr_fin = q_wip %>% dplyr::select(Name, day_into_qtr, qtr_ret_mean, q_max, q_min) %>% filter(q_max==T | q_min==T)
 qtr_fin
 ###
 yr_wip = yr_tbl %>% group_by(Name) %>% summarise(max =max(yr_ret), min = min(yr_ret))
@@ -293,7 +292,7 @@ yr_wip2 = left_join(yr_tbl, yr_wip, by='Name')
 yr_wip2$max_day_y = yr_wip2$max == yr_wip2$yr_ret
 yr_wip2$min_day_y = yr_wip2$min == yr_wip2$yr_ret
 
-yr_fin = yr_wip2 %>% select(Name, day_into_yr, yr_ret, max_day_y, min_day_y)%>%filter(max_day_y==T | min_day_y==T)
+yr_fin = yr_wip2 %>% dplyr::select(Name, day_into_yr, yr_ret, max_day_y, min_day_y)%>%filter(max_day_y==T | min_day_y==T)
 
 yr_fin
 ###
