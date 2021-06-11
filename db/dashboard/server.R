@@ -51,7 +51,7 @@ shinyServer(
             )
 
             output$data_table <- renderTable(
-                head(coins,15)
+                head(read_csv('./aggreg_coins.csv'),15)
             )
             output$max_table <- renderTable(
                 max_tbl %>% filter(Name==input$Name)%>%dplyr::select(Name,mo,day_in_mo,max,max_day),bordered = T, caption="Historical Maximum Return Day by Month"

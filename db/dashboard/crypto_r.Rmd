@@ -131,21 +131,21 @@ agg_max_min = left_join(agg_max_min,dow_min, left_on ='Name',right_on='Name')
 agg_max_min$max_day = agg_max_min$max_dow == agg_max_min$day_of_wk_ret
 agg_max_min$min_day = agg_max_min$min_dow == agg_max_min$day_of_wk_ret
 
-final_max_min = agg_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_dow, max_day, min_dow, min_day) %>% filter(min_day==T | max_day==T)
-fin_day = final_max_min %>% select(Name, wk_day_n, day_of_wk_ret, max_day, min_day)
+final_max_min = agg_max_min %>% dplyr::select(Name, wk_day_n, day_of_wk_ret, max_dow, max_day, min_dow, min_day) %>% filter(min_day==T | max_day==T)
+fin_day = final_max_min %>% dplyr::select(Name, wk_day_n, day_of_wk_ret, max_day, min_day)
 fin_day
 ```
 
 ```{r}
 # library(reshape2)
 #All coins, aggregated by day of wk
-all_Names_daily <- ggplot(day_tbl, aes(x=wk_day_n, y=day_of_wk_ret, col=Name)) + geom_line()
+all_Names_daily <- ggplot(day_tbl, aes(x=wk_day_n, y=day_of_wk_ret, col=Name)) + geom_line()+xlab('Weekday (1=Sunday...)')+ylab('Daily Mean of Returns')+ggtitle('Daily Mean of Returns by Coin')
 all_Names_daily
 # melted %>% group_by(Name) %>% top_n(1,value)
 day_tbl
 ttl_by_day = day_tbl %>% group_by(wk_day_n) %>% summarise(agg_daily_return = mean(day_of_wk_ret, na.rm=T))
 ttl_by_day
-agg_daily <- ggplot(ttl_by_day, aes(x=wk_day_n, y=agg_daily_return)) +geom_line()
+agg_daily <- ggplot(ttl_by_day, aes(x=wk_day_n, y=agg_daily_return)) +geom_line()+xlab('Weekday Num. (1=Sunday...)')+ylab('Aggregate Crypto Return by Day')+ggtitle('Returns by Day of Wk, All Coins Agg.')
 #Graph of all of the coins aggregated by day of wk
 agg_daily
 
@@ -186,7 +186,7 @@ mo_max_min$max_day = mo_max_min$max == mo_max_min$mo_ret_mean
 mo_max_min$min_day = mo_max_min$min == mo_max_min$mo_ret_mean
 mo_max_min
 
-final_mo = mo_max_min %>% select(Name, day_in_mo, mo_ret_mean, max_day, min_day) %>% filter(max_day==T | min_day==T)
+final_mo = mo_max_min %>% dplyr::select(Name, day_in_mo, mo_ret_mean, max_day, min_day) %>% filter(max_day==T | min_day==T)
 final_mo
 
 ```
@@ -196,7 +196,7 @@ final_mo
 # library(reshape2)
 
 monthly_tbl
-all_Names_monthly <- ggplot(mo_tbl,aes(x=day_in_mo, y=mo_ret_mean, group=Name)) + geom_line(aes(colour=Name))
+all_Names_monthly <- ggplot(mo_tbl,aes(x=day_in_mo, y=mo_ret_mean, group=Name)) + geom_line(aes(colour=Name))+xlab("Day / Month")+ylab('Daily Return Percent')+ggtitle('Daily Returns by Coin by Month')
 all_Names_monthly + facet_wrap(~mo)
 
 ```
@@ -207,7 +207,7 @@ all_Names_monthly + facet_wrap(~mo)
 ttl_by_mo = mo_tbl %>% group_by(day_in_mo, mo) %>% summarise(agg_monthly_return = mean(mo_ret_mean, na.rm=T))
 ttl_by_mo_by_day =mo_tbl %>% group_by(day_in_mo) %>% summarise(agg_monthly_return = mean(mo_ret_mean, na.rm=T))
 
-agg_monthly <- ggplot(data = ttl_by_mo_by_day, aes(x=day_in_mo, y=agg_monthly_return)) +geom_line(aes(group = 1))
+agg_monthly <- ggplot(data = ttl_by_mo_by_day, aes(x=day_in_mo, y=agg_monthly_return)) +geom_line(aes(group = 1))+xlab('Day of Month')+ylab('Avg. Daily Return')+ggtitle('Average Daily Return by Day of Month, all Coins Agg.')
 agg_monthly
 
 ```
@@ -232,13 +232,13 @@ quarterly_tbl = qtr_tbl %>% group_by(Name, day_into_qtr) %>% summarise (qtr_ret_
 quarterly_tbl
 all_Names_quarterly <- ggplot(qtr_tbl,aes(x=day_into_qtr, y=qtr_ret, group=Name)) + geom_line(aes(colour=Name))
 
-all_Names_quarterly + facet_grid(~qtr)
+all_Names_quarterly + facet_grid(~qtr)+xlab('Quarter/Day')+ylab('Daily Return')+ggtitle('Daily Returns by Day by Coin')
 # melted_qtr %>% group_by(Name) %>% top_n(1,value)
 
 ttl_by_qtr = qtr_tbl %>% group_by(qtr, day_into_qtr) %>% summarise(agg_quarterly_return = mean(qtr_ret, na.rm=T))
 ttl_by_qtr
 agg_qtrly <- ggplot(data = ttl_by_qtr, aes(x=day_into_qtr, y=agg_quarterly_return)) +geom_line(aes(group = 1))
-agg_qtrly + facet_wrap(~qtr)
+agg_qtrly + facet_wrap(~qtr)+xlab('Day of Quarter')+ylab('Daily Return')+ggtitle('Daily Returns by Quarter, All Coins Aggregated')
 
 ```
 
@@ -249,7 +249,7 @@ q_tbl
 q_wip = left_join(quarterly_tbl,q_tbl, on='Name')
 q_wip$q_max = q_wip$qtr_ret_mean==q_wip$max
 q_wip$q_min = q_wip$qtr_ret_mean==q_wip$min
-qtr_fin = q_wip %>% select(Name, day_into_qtr, qtr_ret_mean, q_max, q_min) %>% filter(q_max==T | q_min==T)
+qtr_fin = q_wip %>% dplyr::select(Name, day_into_qtr, qtr_ret_mean, q_max, q_min) %>% filter(q_max==T | q_min==T)
 qtr_fin
 ```
 
@@ -266,14 +266,14 @@ yr_tbl
 # library(reshape2)
 # melted_yr = melt(norm_yr_tbl,id.vars=c('day_into_yr','Name') ,measure.vars='norm_yr')
 # melted_yr
-all_Names_yearly <- ggplot(yr_tbl,aes(x=day_into_yr, y=yr_ret, group=Name)) + geom_line(aes(colour=Name))
+all_Names_yearly <- ggplot(yr_tbl,aes(x=day_into_yr, y=yr_ret, group=Name)) + geom_line(aes(colour=Name))+xlab('Day of Year')+ylab('Daily Reutrns')+ggtitle('Daily Returns by Day of Year by Coin')
 all_Names_yearly
 
 # melted_yr %>% group_by(Name) %>% top_n(1,value)
 
 ttl_by_yr = yr_tbl %>% group_by(day_into_yr) %>% summarise(agg_yearly_return = mean(yr_ret, na.rm=T))
 ttl_by_yr
-agg_yrly <- ggplot(data = ttl_by_yr, aes(x=day_into_yr, y=agg_yearly_return)) +geom_line(aes(group = 1))
+agg_yrly <- ggplot(data = ttl_by_yr, aes(x=day_into_yr, y=agg_yearly_return)) +geom_line(aes(group = 1))+xlab('Day of Year')+ylab('Daily Reutrns')+ggtitle('Daily Returns by Day of Year Aggregated Coins')
 agg_yrly
 ```
 
@@ -285,7 +285,7 @@ yr_wip2 = left_join(yr_tbl, yr_wip, by='Name')
 yr_wip2$max_day_y = yr_wip2$max == yr_wip2$yr_ret
 yr_wip2$min_day_y = yr_wip2$min == yr_wip2$yr_ret
 
-yr_fin = yr_wip2 %>% select(Name, day_into_yr, yr_ret, max_day_y, min_day_y)%>%filter(max_day_y==T | min_day_y==T)
+yr_fin = yr_wip2 %>% dplyr::select(Name, day_into_yr, yr_ret, max_day_y, min_day_y)%>%filter(max_day_y==T | min_day_y==T)
 
 yr_fin
 ```
@@ -302,8 +302,8 @@ nasdaq$nasdaq_day_ret = nasdaq$Close / nasdaq$Open - 1
 nyse$nyse_day_ret = nasdaq$Close / nasdaq$Open - 1
 nyse$Name = 'NYSE'
 nasdaq$Name = "NASDAQ"
-nyse_tbl = nyse %>% select(Name, Date, nyse_day_ret)
-nasdaq_tbl = nasdaq %>% select(Name, Date, nasdaq_day_ret)
+nyse_tbl = nyse %>% dplyr::select(Name, Date, nyse_day_ret)
+nasdaq_tbl = nasdaq %>% dplyr::select(Name, Date, nasdaq_day_ret)
 nyse_tbl = nyse_tbl %>% rename(date_time = Date, day_ret = nyse_day_ret)
 nyse_tbl
 nasdaq_tbl = nasdaq_tbl %>% rename(date_time = Date, day_ret = nasdaq_day_ret)
@@ -322,8 +322,7 @@ new_mat = pivot_wider(new_df, names_from = 'Name', values_from = 'day_ret')
 new_mat$date_time = as.numeric(new_mat$date_time)
 new_mat
 corr_mat = cor(new_mat, use="pairwise.complete.obs")
-corrplot(corr_mat, method='number', type='lower') 
-
+corrplot(corr_mat, method='circle', type='lower',tl.cex = .6,order='alphabet')
 
 
 ```
